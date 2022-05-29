@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "Node.h"
 #include "Edge.h"
@@ -15,7 +16,9 @@ private:
 public:
 	void addNode(Node node);
 	void addEdge(Edge edge);
+	Node findNode(std::string name);
 	void printNodes();
 	void printEdges();
 	bool nodeExists(Node node);
+	void djikstra(Node source);
 };

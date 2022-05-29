@@ -13,4 +13,6 @@ public:
 	Node(std::string name);
 	void print();
 	inline std::string getName() { return this->name; }
+	friend bool operator== (const Node& n1, const Node& n2);
+	friend bool operator!= (const Node& n1, const Node& n2);
 };

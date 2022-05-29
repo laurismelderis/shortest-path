@@ -8,8 +8,7 @@ using namespace std;
 #include "Node.h"
 #include "CSV.h"
 #include "Utils.h"
-
-int main()
+Graph getKarateGraph()
 {
 	Graph graph;
 	vector<string> content = CSV::read("C:\\Users\\siamo\\Downloads\\Graphs\\karate.csv");
@@ -35,6 +34,12 @@ int main()
 		}
 		graph.addEdge(edge);
 	}
+	return graph;
+}
 
-	graph.printNodes();
+int main()
+{
+	Graph karateGraph = getKarateGraph();
+	Node sourceNode = karateGraph.findNode("9");
+	karateGraph.djikstra(sourceNode);
 }

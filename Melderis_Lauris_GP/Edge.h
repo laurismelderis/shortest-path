@@ -12,4 +12,7 @@ public:
 	Edge();
 	Edge(Node from, Node to, int weight);
 	void print();
+	Node getNodeFrom();
+	Node getNodeTo();
+	int getWeight();
 };
