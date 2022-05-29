@@ -5,6 +5,12 @@ using namespace std;
 Node::Node(string name)
 {
 	this->name = name;
+	this->label = name;
+}
+Node::Node(string name, string label)
+{
+	this->name = name;
+	this->label = label;
 }
 void Node::print()
 {

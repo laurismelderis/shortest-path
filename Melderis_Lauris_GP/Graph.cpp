@@ -13,11 +13,32 @@ void Graph::addEdge(Edge edge)
 	edges.push_back(edge);
 }
 
-Node Graph::findNode(string name)
+void Graph::setNodes(vector<Node> nodes)
+{
+	this->nodes = nodes;
+}
+
+void Graph::setEdges(vector<Edge> edges)
+{
+	this->edges = edges;
+}
+
+Node Graph::findNodeByName(string name)
 {
 	for (Node node : nodes)
 	{
 		if (node.getName() == name)
+		{
+			return node;
+		}
+	}
+}
+
+Node Graph::findNodeByLabel(string label)
+{
+	for (Node node : nodes)
+	{
+		if (node.getLabel() == label)
 		{
 			return node;
 		}
@@ -60,25 +81,55 @@ struct Vertex
 	Vertex(string name)
 	{
 		this->name = name;
-		this->cost = INT_MIN;
-		this->prevNode = "";
+		this->cost = INT_MAX;
 	}
 	void print()
 	{
-		cout << name << " " << cost << " " << prevNode << endl;
+		cout << "NodeID: " << name << " Cost: " << cost << endl;
 	}
 };
 
-void Graph::djikstra(Node sourceNode)
+Node getSmallestNode(vector<Vertex> shortestVertices, vector<Node> nodes)
 {
-	vector<Vertex> vertices;
+	Node theSmallestNode;
+	int minCost = INT_MAX;
+	// Find the smallest node
+	for (Vertex vert : shortestVertices)
+	{
+		if (vert.cost < minCost) {
+			for (Node node : nodes)
+			{
+				if (vert.name == node.getName()) {
+					minCost = vert.cost;
+					theSmallestNode = node;
+				}
+
+			}
+		}
+	}
+	return theSmallestNode;
+}
+
+Vertex getVertex(Node node, vector<Vertex> vertices) {
+	for (Vertex vert : vertices)
+	{
+		if (vert.name == node.getName()) {
+			return vert;
+		}
+	}
+}
+
+void Graph::djikstra(Node sourceNode, Node destinationNode, bool isWeightOne)
+{
+	vector<Vertex> shortestVertices;
 	vector<Node> visitedNodes;
 	vector<Node> unvisitedNodes;
 
-	// Initialize shortest vertices
+	// Initialize shortest shortestVertices
 	for (Node node : nodes)
 	{
-		vertices.push_back(Vertex(node.getName()));
+		Vertex vertex(node.getName());
+		shortestVertices.push_back(vertex);
 	}
 
 	// Initialize unvisited nodes
@@ -86,73 +137,90 @@ void Graph::djikstra(Node sourceNode)
 	{
 		unvisitedNodes.push_back(node);
 	}
+	// Remove the source node
+	unvisitedNodes.erase(remove(unvisitedNodes.begin(), unvisitedNodes.end(), sourceNode));
+	visitedNodes.push_back(sourceNode);
 
-	Node currentNode = sourceNode;
-
-	// Loop through every node
-	while ( ! unvisitedNodes.empty())
+	// Get the first node edges
+	vector<Edge> currentNodeEdges;
+	for (Edge edge : edges)
 	{
-		// Get current node edges
-		vector<Edge> currentNodeEdges;
+		if (edge.getNodeFrom().getName() == sourceNode.getName())
+		{
+			currentNodeEdges.push_back(edge);
+		}
+	}
+
+	// Update shortest shortestVertices for the first time
+	for (Edge edge : currentNodeEdges)
+	{
+		for (int j = 0; j < shortestVertices.size(); j++)
+		{
+			if (edge.getNodeTo().getName() == shortestVertices[j].name)
+			{
+				shortestVertices[j].cost = edge.getWeight();
+			}
+		}
+	}
+
+
+	Node theSmallestNode;
+	while (!unvisitedNodes.empty())
+	{
+		Node theSmallestNode = getSmallestNode(shortestVertices, unvisitedNodes);
+		if (theSmallestNode.getName() == "") break;
+
+		currentNodeEdges.clear();
+		// Get the smallest node edges
 		for (Edge edge : edges)
 		{
-			if (edge.getNodeFrom().getName() == currentNode.getName())
+			if (edge.getNodeFrom().getName() == theSmallestNode.getName())
 			{
 				currentNodeEdges.push_back(edge);
 			}
 		}
 
-		// Update shortest vertices
+		// Update shortestVertices
 		for (Edge edge : currentNodeEdges)
 		{
-			for (int j = 0; j < vertices.size(); j++)
+			for (int j = 0; j < shortestVertices.size(); j++)
 			{
-				if (edge.getNodeTo().getName() == vertices[j].name)
+				if (edge.getNodeTo().getName() == shortestVertices[j].name)
 				{
-					if (vertices[j].cost == INT_MIN) vertices[j].cost = edge.getWeight();
-					else vertices[j].cost += edge.getWeight();
-					cout << "Updated to: ";
-					vertices[j].print();
-				}
-			}
-		}
-
-		// Add current node to the visited nodes list
-		visitedNodes.push_back(currentNode);
-		
-		// Remove from current list unvisitedNode
-		if (!unvisitedNodes.empty()) {
-			// Node theNode = find(unvisitedNodes.begin(), unvisitedNodes.end(), currentNode);
-			unvisitedNodes.erase(remove(unvisitedNodes.begin(), unvisitedNodes.end(), currentNode));
-		}
-		else {
-			break;
-		}
-		// cout << visitedNodes.size() << endl;
-		// cout << unvisitedNodes.size() << endl;
-
-		// Next vertex should be with the smallest cost
-		// Find vertex with smallest cost
-		int smallestCost = INT_MAX;
-		for (auto unvisitedNode : unvisitedNodes)
-		{
-			// Find the according node from vertex
-			for (auto vert : vertices)
-			{
-				// If the smallest then assign the according next node
-				if (unvisitedNode.getName() == vert.name)
-				{
-					if (vert.cost < smallestCost && vert.cost != INT_MIN)
+					int newCost = 0;
+					if (isWeightOne) {
+						newCost = getVertex(theSmallestNode, shortestVertices).cost + 1;
+					}
+					else {
+						newCost = getVertex(theSmallestNode, shortestVertices).cost + edge.getWeight();
+					}
+					if (newCost < shortestVertices[j].cost)
 					{
-						smallestCost = vert.cost;
-						currentNode = unvisitedNode;
-						break;
+						shortestVertices[j].cost = newCost;
 					}
 				}
 			}
 		}
+		unvisitedNodes.erase(remove(unvisitedNodes.begin(), unvisitedNodes.end(), theSmallestNode));
+		visitedNodes.push_back(theSmallestNode);
+
 	}
-	// Print current shortest paths
-	for (auto vert : vertices)
-		vert.print();
+
+	int shortestPath = 0;
+	for (auto vert : shortestVertices)
+	{
+		if (vert.name == destinationNode.getName())
+		{
+			shortestPath = vert.cost;
+		}
+	}
+		
+	if (isWeightOne) {
+		cout << "Diameter in the graph is: ";
+		cout << shortestPath << endl;
+	}
+	else {
+		cout << "Shortest path from " << sourceNode.getLabel() << " to " << destinationNode.getLabel() << " is: ";
+		cout << shortestPath << endl;
+	}
 }

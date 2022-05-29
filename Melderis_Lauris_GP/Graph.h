@@ -16,9 +16,13 @@ private:
 public:
 	void addNode(Node node);
 	void addEdge(Edge edge);
-	Node findNode(std::string name);
+	void setNodes(std::vector<Node> nodes);
+	void setEdges(std::vector<Edge> edges);
+
+	Node findNodeByName(std::string name);
+	Node findNodeByLabel(std::string label);
 	void printNodes();
 	void printEdges();
 	bool nodeExists(Node node);
-	void djikstra(Node source);
+	void djikstra(Node source, Node destinationNode,  bool isWeightOne);
 };
